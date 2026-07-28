@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://wishwarrior.github.io/opencode_test",
+  "homepage": "https://flloisee.github.io/flloisee-task-tracker",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
