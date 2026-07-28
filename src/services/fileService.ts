@@ -44,7 +44,10 @@ export async function hasPersistentAccess(): Promise<boolean> {
     const handle = await loadHandle();
     if (!handle) return false;
     const opts: FileSystemHandlePermissionDescriptor = { mode: 'readwrite' };
-    const status = await handle.queryPermission(opts);
+    let status = await handle.queryPermission(opts);
+    if (status === 'prompt') {
+      status = await handle.requestPermission(opts);
+    }
     return status === 'granted';
   } catch {
     return false;
@@ -98,7 +101,10 @@ export async function writeTasksFile(tasks: Task[]): Promise<void> {
   if (!handle) return;
 
   const opts: FileSystemHandlePermissionDescriptor = { mode: 'readwrite' };
-  const status = await handle.queryPermission(opts);
+  let status = await handle.queryPermission(opts);
+  if (status === 'prompt') {
+    status = await handle.requestPermission(opts);
+  }
   if (status !== 'granted') return;
 
   try {
