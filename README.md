@@ -189,12 +189,12 @@ Every mutation → `localStorage` first → FSAA sync if connected. Zero network
 
 <div align="center">
 
-```
+
 ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧
   no backend · no database · no API
   your files are your persistence layer
 ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧ ✧
-```
+
 
 </div>
 
