@@ -1,40 +1,6 @@
 import type { Task, TaskFormData } from '../types/task';
 import * as fileApi from './fileService';
 
-/* ponytail: seed data inlined to avoid Vite watching data/tasks.json at runtime */
-const seedData: Task[] = [
-  {
-    id: 'seed-002',
-    title: 'Study for organic chemistry midterm',
-    category: 'exam',
-    priority: 'medium',
-    dueDate: '2025-08-10',
-    done: false,
-    createdAt: '2025-07-28T08:05:00.000Z',
-    completedAt: null,
-  },
-  {
-    id: 'seed-003',
-    title: 'Build prototype for capstone project',
-    category: 'project',
-    priority: 'high',
-    dueDate: '2025-08-20',
-    done: false,
-    createdAt: '2025-07-28T08:10:00.000Z',
-    completedAt: null,
-  },
-  {
-    id: 'seed-004',
-    title: "Read chapter 5 of 'The Pragmatic Programmer'",
-    category: 'custom',
-    priority: 'low',
-    dueDate: '2025-08-05',
-    done: true,
-    createdAt: '2025-07-26T09:00:00.000Z',
-    completedAt: '2025-07-28T10:30:00.000Z',
-  },
-];
-
 const STORAGE_KEY = 'taskful_tasks_cache';
 
 /* ─── Connection state ─── */
@@ -51,7 +17,7 @@ export async function isFileConnected(): Promise<boolean> {
 
 /**
  * Call once at startup. Checks for persistent file handle.
- * Falls back to localStorage → bundled seed.
+ * Falls back to localStorage.
  * Every write ALWAYS attempts to sync to data/tasks.json via FSAA.
  */
 export async function initialize(): Promise<Task[]> {
@@ -67,9 +33,7 @@ export async function initialize(): Promise<Task[]> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-    const tasks = seedData as Task[];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    return tasks;
+    return [];
   } catch {
     return [];
   }
