@@ -1,0 +1,63 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.group {
+  display: flex;
+  gap: var(--space-2xs);
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 0.5rem 0.9rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-micro), color var(--dur-micro);
+}
+
+.tab:hover {
+  background: var(--color-paper-3);
+  color: var(--color-ink);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-accent-2);
+  outline-offset: 2px;
+}
+
+.tab:active {
+  background: var(--color-paper-3);
+}
+
+.active {
+  background: color-mix(in oklch, var(--color-accent-2) 15%, transparent) !important;
+  color: var(--color-accent-2) !important;
+  font-weight: 600;
+}
+
+.divider {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--color-rule);
+}
+
+@media (max-width: 480px) {
+  .bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xs);
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+  }
+}
