@@ -25,6 +25,7 @@ export default function App() {
     reloadTasks,
     connect,
     disconnect,
+    reauth,
   } = useTasks();
 
   if (loading) {
@@ -44,6 +45,7 @@ export default function App() {
         onImportComplete={reloadTasks}
         onDisconnect={disconnect}
         onReconnect={connect}
+        onReauth={reauth}
       />
 
       <main className={styles.main}>
@@ -68,10 +70,12 @@ export default function App() {
         />
       </main>
 
-      {(connectionState === 'disconnected' || connectionState === 'unsupported') && (
+      {(connectionState === 'disconnected' || connectionState === 'unsupported' || connectionState === 'needs-reauth') && (
         <ConnectFolderBanner
           onConnect={connect}
+          onReauth={reauth}
           isSupported={isSupported}
+          needsReauth={connectionState === 'needs-reauth'}
         />
       )}
 

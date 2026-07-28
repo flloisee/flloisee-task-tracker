@@ -7,9 +7,10 @@ interface Props {
   onImportComplete: () => void;
   onDisconnect: () => void;
   onReconnect: () => void;
+  onReauth: () => void;
 }
 
-export function Nav({ stats, onImportComplete, onDisconnect, onReconnect }: Props) {
+export function Nav({ stats, onImportComplete, onDisconnect, onReconnect, onReauth }: Props) {
   return (
     <nav className={styles.nav}>
       <div className={styles.inner}>
@@ -22,6 +23,7 @@ export function Nav({ stats, onImportComplete, onDisconnect, onReconnect }: Prop
             onImportComplete={onImportComplete}
             onDisconnect={onDisconnect}
             onReconnect={onReconnect}
+            onReauth={onReauth}
           />
         </div>
       </div>

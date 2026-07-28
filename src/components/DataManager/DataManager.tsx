@@ -1,23 +1,25 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { exportTasksAsJson, importTasksFromJson, isFileConnected } from '../../services/storageService';
+import { exportTasksAsJson, importTasksFromJson, checkHandleState } from '../../services/storageService';
+import type { HandleState } from '../../services/storageService';
 import styles from './DataManager.module.css';
 
 interface Props {
   onImportComplete: () => void;
   onDisconnect: () => void;
   onReconnect: () => void;
+  onReauth: () => void;
 }
 
-export function DataManager({ onImportComplete, onReconnect }: Props) {
+export function DataManager({ onImportComplete, onReconnect, onReauth }: Props) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'ok' | 'error' | 'info' } | null>(null);
-  const [connected, setConnected] = useState(false);
+  const [handleState, setHandleState] = useState<HandleState>('none');
   const wrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check connection state on mount and after the panel opens
   const checkConnection = useCallback(async () => {
-    setConnected(await isFileConnected());
+    setHandleState(await checkHandleState());
   }, []);
 
   useEffect(() => { checkConnection(); }, [checkConnection]);
@@ -78,14 +80,19 @@ export function DataManager({ onImportComplete, onReconnect }: Props) {
 
   const handleToggleConnection = useCallback(async () => {
     try {
-      await onReconnect();
-      setConnected(true);
+      if (handleState === 'stored') {
+        await onReauth();
+      } else {
+        await onReconnect();
+      }
+      setHandleState('granted');
       setMessage({ text: 'Connected to data/tasks.json!', type: 'ok' });
     } catch {
+      setHandleState('none');
       setMessage({ text: 'Connection cancelled.', type: 'error' });
     }
     setTimeout(() => setMessage(null), 3000);
-  }, [onReconnect]);
+  }, [handleState, onReauth, onReconnect]);
 
   return (
       <div className={styles.wrapper} ref={wrapperRef}>
@@ -93,22 +100,30 @@ export function DataManager({ onImportComplete, onReconnect }: Props) {
         className={styles.trigger}
         onClick={() => setOpen(o => { if (!o) checkConnection(); return !o; })}
         aria-label="Data options"
-        title={connected ? 'Connected to data/tasks.json' : 'Using local storage'}
+        title={handleState === 'granted' ? 'Connected to data/tasks.json' : 'Using local storage'}
         data-action="open-data-manager"
       >
-        {connected ? '💾' : '💿'}
+        {handleState === 'granted' ? '💾' : '💿'}
       </button>
 
       {open && (
         <div className={styles.panel} role="menu">
           <div className={styles.statusRow}>
-            <span className={connected ? styles.connected : styles.disconnected}>
-              {connected ? '● Connected — writes to data/tasks.json' : '○ Using local storage — file not synced'}
+            <span className={handleState === 'granted' ? styles.connected : styles.disconnected}>
+              {handleState === 'granted'
+                ? '● Connected — writes to data/tasks.json'
+                : handleState === 'stored'
+                  ? '○ Handle stored — tap to re-authorise'
+                  : '○ Using local storage — file not synced'}
             </span>
           </div>
 
           <button className={styles.action} onClick={handleToggleConnection} role="menuitem">
-            {connected ? '📁 Change data folder' : '📁 Connect to data folder'}
+            {handleState === 'granted'
+              ? '📁 Change data folder'
+              : handleState === 'stored'
+                ? '🔑 Reconnect to data folder'
+                : '📁 Connect to data folder'}
           </button>
 
           <hr className={styles.divider} />

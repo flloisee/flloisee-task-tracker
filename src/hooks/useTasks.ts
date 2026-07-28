@@ -3,7 +3,7 @@ import type { Task, TaskFormData, CategoryFilter, StatusFilter } from '../types/
 import type { TaskStats } from '../types/stats';
 import * as store from '../services/storageService';
 
-export type ConnectionState = 'loading' | 'connected' | 'disconnected' | 'unsupported';
+export type ConnectionState = 'loading' | 'connected' | 'disconnected' | 'unsupported' | 'needs-reauth';
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -19,8 +19,10 @@ export function useTasks() {
       try {
         const data = await store.initialize();
         setTasks(data);
-        const connected = await store.isFileConnected();
-        setConnectionState(connected ? 'connected' : !supported ? 'unsupported' : 'disconnected');
+        const state = await store.checkHandleState();
+        if (state === 'granted') setConnectionState('connected');
+        else if (state === 'stored') setConnectionState('needs-reauth');
+        else setConnectionState(!supported ? 'unsupported' : 'disconnected');
       } catch {
         setTasks([]);
         setConnectionState(!supported ? 'unsupported' : 'disconnected');
@@ -45,6 +47,19 @@ export function useTasks() {
   async function disconnect() {
     await store.disconnectDirectory();
     setConnectionState('disconnected');
+  }
+
+  /* ─── Re-auth (handle exists, permission lapsed) ─── */
+  async function reauth() {
+    setConnectionState('loading');
+    try {
+      const data = await store.reauthDirectory();
+      setTasks(data);
+      setConnectionState('connected');
+    } catch {
+      setConnectionState('disconnected');
+      throw new Error('Re-authorisation cancelled');
+    }
   }
 
   /* ─── CRUD ─── */
@@ -108,5 +123,6 @@ export function useTasks() {
     reloadTasks,
     connect,
     disconnect,
+    reauth,
   };
 }

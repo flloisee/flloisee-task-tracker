@@ -4,5 +4,5 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   base: '/flloisee-task-tracker/',
-  server: { watch: { ignored: ['**/data/**'] } },
+  server: { host: true, watch: { ignored: ['**/data/**'] } },
 });

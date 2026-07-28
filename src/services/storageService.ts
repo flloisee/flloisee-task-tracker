@@ -3,6 +3,8 @@ import * as fileApi from './fileService';
 
 const STORAGE_KEY = 'taskful_tasks_cache';
 
+export type HandleState = 'granted' | 'stored' | 'none';
+
 /* ─── Connection state ─── */
 
 /**
@@ -11,6 +13,23 @@ const STORAGE_KEY = 'taskful_tasks_cache';
  */
 export async function isFileConnected(): Promise<boolean> {
   return fileApi.isFileSystemAccessSupported() && (await fileApi.hasPersistentAccess());
+}
+
+/**
+ * Return the current handle state:
+ * - 'granted' – handle exists and has readwrite permission
+ * - 'stored'  – handle exists but permission needs re-authorization (user gesture)
+ * - 'none'    – no handle stored
+ */
+export async function checkHandleState(): Promise<HandleState> {
+  if (!fileApi.isFileSystemAccessSupported()) return 'none';
+  try {
+    const exists = await fileApi.hasStoredHandle();
+    if (!exists) return 'none';
+    return (await fileApi.hasPersistentAccess()) ? 'granted' : 'stored';
+  } catch {
+    return 'none';
+  }
 }
 
 /* ─── Initialization ─── */
@@ -51,6 +70,20 @@ export async function connectDirectory(): Promise<Task[]> {
 
 export async function disconnectDirectory(): Promise<void> {
   await fileApi.revokeAccess();
+}
+
+/**
+ * Re-authorize an existing handle without the directory picker.
+ * The user already connected before — just re-grant permission via one tap
+ * (no need to navigate the folder picker again).
+ */
+export async function reauthDirectory(): Promise<Task[]> {
+  const ok = await fileApi.reauthHandle();
+  if (!ok) throw new Error('Permission denied');
+  const data = await fileApi.readTasksFile();
+  const tasks = data ?? [];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  return tasks;
 }
 
 /* ─── Internal helpers ─── */

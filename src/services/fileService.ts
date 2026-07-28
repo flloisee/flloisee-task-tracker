@@ -44,14 +44,35 @@ export async function hasPersistentAccess(): Promise<boolean> {
     const handle = await loadHandle();
     if (!handle) return false;
     const opts: FileSystemHandlePermissionDescriptor = { mode: 'readwrite' };
-    let status = await handle.queryPermission(opts);
-    if (status === 'prompt') {
-      status = await handle.requestPermission(opts);
-    }
+    // ponytail: only queryPermission() here — requestPermission() needs a user
+    // gesture and fails silently on mobile during app init.  Caller uses
+    // reauthHandle() when the user taps a button.
+    const status = await handle.queryPermission(opts);
     return status === 'granted';
   } catch {
     return false;
   }
+}
+
+/**
+ * Check whether a directory handle is stored in IndexedDB (regardless of
+ * current permission).  Returns true when the user previously connected but
+ * the session permission may have lapsed (e.g. after page reload on mobile).
+ */
+export async function hasStoredHandle(): Promise<boolean> {
+  const handle = await loadHandle();
+  return handle !== null;
+}
+
+/**
+ * Re-authorize an existing stored handle.  Must be called from a user gesture
+ * (click / tap).  Returns true if permission was granted.
+ */
+export async function reauthHandle(): Promise<boolean> {
+  const handle = await loadHandle();
+  if (!handle) return false;
+  const status = await handle.requestPermission({ mode: 'readwrite' });
+  return status === 'granted';
 }
 
 export async function requestDirectoryAccess(): Promise<void> {
