@@ -157,11 +157,6 @@ export function DataManager({ onImportComplete, onReconnect }: Props) {
                 <code>tasks.json</code> on every change — every add, delete, toggle, and edit syncs
                 straight to the file on disk.
               </p>
-              <p>
-                <strong>To version-control your tasks:</strong> Connect to the folder, make changes
-                in the app, then <code>git add data/tasks.json && git commit</code> — the file is
-                already updated.
-              </p>
             </div>
           </details>
         </div>
