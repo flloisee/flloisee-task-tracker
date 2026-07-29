@@ -26,3 +26,54 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Empty state (was EmptyState.module.css) */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-3xl) var(--space-lg);
+  text-align: center;
+}
+
+.msg {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-ink-2);
+  font-weight: 500;
+}
+
+.dot {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  position: relative;
+  animation: dot-pulse 4s ease-in-out infinite;
+}
+
+.dot::before,
+.dot::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  top: 16px;
+}
+
+.dot::before {
+  left: 12px;
+}
+
+.dot::after {
+  right: 12px;
+}
+
+@keyframes dot-pulse {
+  0%,
+  100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}

@@ -1,11 +1,10 @@
 import { useTasks } from '../hooks/useTasks';
-import { ConnectFolderBanner } from '../components/ConnectFolderBanner/ConnectFolderBanner';
 import { Nav } from '../components/Nav/Nav';
 import { TaskForm } from '../components/TaskForm/TaskForm';
 import { StatsBar } from '../components/StatsBar/StatsBar';
 import { FilterBar } from '../components/FilterBar/FilterBar';
 import { TaskList } from '../components/TaskList/TaskList';
-import { Footer } from '../components/Footer/Footer';
+
 import styles from './App.module.css';
 
 export default function App() {
@@ -13,7 +12,8 @@ export default function App() {
     filteredTasks,
     stats,
     loading,
-    connectionState,
+    storageBackend,
+    setStorageBackend,
     categoryFilter,
     statusFilter,
     setCategoryFilter,
@@ -21,6 +21,7 @@ export default function App() {
     addTask,
     toggleTask,
     deleteTask,
+    clearDone,
     editTask,
     reloadTasks,
     connect,
@@ -36,12 +37,12 @@ export default function App() {
     );
   }
 
-  const isSupported = 'showDirectoryPicker' in window;
-
   return (
     <div className={styles.app}>
       <Nav
         stats={stats}
+        storageBackend={storageBackend}
+        onStorageBackendChange={setStorageBackend}
         onImportComplete={reloadTasks}
         onDisconnect={disconnect}
         onReconnect={connect}
@@ -58,6 +59,7 @@ export default function App() {
           status={statusFilter}
           onCategoryChange={setCategoryFilter}
           onStatusChange={setStatusFilter}
+          onClearDone={clearDone}
         />
 
         <TaskList
@@ -70,16 +72,14 @@ export default function App() {
         />
       </main>
 
-      {(connectionState === 'disconnected' || connectionState === 'unsupported' || connectionState === 'needs-reauth') && (
-        <ConnectFolderBanner
-          onConnect={connect}
-          onReauth={reauth}
-          isSupported={isSupported}
-          needsReauth={connectionState === 'needs-reauth'}
-        />
-      )}
-
-      <Footer />
+      <footer className={styles.footer}>
+        <hr className={styles.rule} />
+        <p className={styles.text}>
+          flloisee's task tracker <span className={styles.dot}>·</span> Designed with{' '}
+          <span className={styles.highlight}>Hallmark</span> ·{' '}
+          <span className={styles.highlight}>Hum</span> <span className={styles.dot}>·</span> Made by flloisee
+        </p>
+      </footer>
     </div>
   );
 }

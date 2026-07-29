@@ -1,20 +1,18 @@
-export function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+export function formatDate(iso: string): string {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function isOverdue(dateStr: string): boolean {
-  const today = new Date().toISOString().split('T')[0];
-  return dateStr < today;
+export function isOverdue(iso: string): boolean {
+  if (!iso) return false;
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  return new Date(iso + 'T23:59:59') < today;
 }
 
-export function isToday(dateStr: string): boolean {
-  return dateStr === new Date().toISOString().split('T')[0];
-}
-
-export function daysUntil(dateStr: string): number {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr + 'T00:00:00');
-  return Math.ceil((target.getTime() - now.getTime()) / 86400000);
+export function daysUntil(iso: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(iso + 'T00:00:00');
+  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }

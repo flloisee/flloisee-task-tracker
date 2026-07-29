@@ -47,14 +47,14 @@
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--color-mint);
-  font-weight: 500;
+  font-weight: 800;
 }
 
 .disconnected {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--color-ink-3);
-  font-weight: 500;
+  font-weight: 800;
 }
 
 .action {
@@ -109,9 +109,61 @@
   font-weight: 500;
 }
 
-.help {
-  margin-top: var(--space-xs);
+.sourceToggle {
   padding: var(--space-xs) var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.sourceLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sourceOptions {
+  display: flex;
+  gap: var(--space-2xs);
+}
+
+.sourceOption {
+  all: unset;
+  cursor: pointer;
+  flex: 1;
+  padding: var(--space-xs) var(--space-2xs);
+  border-radius: var(--radius-input);
+  font: 500 0.75rem var(--font-body);
+  color: var(--color-ink-3);
+  text-align: center;
+  background: var(--color-paper-3);
+  transition: background var(--dur-micro), color var(--dur-micro);
+}
+
+.sourceOption:hover:not(:disabled) {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+.sourceOption:focus-visible {
+  outline: 2px solid var(--color-accent-2);
+  outline-offset: 2px;
+}
+
+.sourceOption:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sourceActive {
+  background: var(--color-accent-2) !important;
+  color: var(--color-paper) !important;
+}
+
+.help {
+  padding: var(--space-2xs) var(--space-sm);
 }
 
 .helpSummary {

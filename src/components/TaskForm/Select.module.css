@@ -1,0 +1,76 @@
+.wrapper {
+  position: relative;
+  flex: 0 1 150px;
+  min-width: 120px;
+}
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: border-color var(--dur-micro), box-shadow var(--dur-micro);
+}
+
+.trigger:hover {
+  border-color: var(--color-ink-3);
+}
+
+.trigger:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 25%, transparent);
+  outline: none;
+}
+
+.arrow {
+  font-size: 1.5rem;
+  line-height: 0;
+  transform: translateY(-2px);
+  transition: transform var(--dur-micro);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-input);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.opt {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+}
+
+.opt:hover {
+  background: var(--color-paper-2);
+}
+
+.opt.sel {
+  background: var(--color-accent);
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    flex: 1 1 auto;
+    min-width: unset;
+  }
+}

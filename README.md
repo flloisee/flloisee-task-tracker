@@ -4,7 +4,7 @@
 
 <a href="https://wishwarrior.github.io/opencode_test"><img src="https://img.shields.io/badge/live-demo-ffd166?style=flat-square&labelColor=1a1a1a" alt="Live demo"></a> <a href="#"><img src="https://img.shields.io/badge/react-19-58c4dc?style=flat-square&labelColor=1a1a1a" alt="React 19"></a> <a href="#"><img src="https://img.shields.io/badge/typescript-6-3178c6?style=flat-square&labelColor=1a1a1a" alt="TypeScript 6"></a> <a href="#"><img src="https://img.shields.io/badge/vite-8-ffc107?style=flat-square&labelColor=1a1a1a" alt="Vite 8"></a> <a href="#"><img src="https://img.shields.io/badge/fsaa-✓-06d6a0?style=flat-square&labelColor=1a1a1a" alt="FSAA"></a> <a href="#"><img src="https://img.shields.io/badge/zero%20backend-%E2%9C%94-ef476f?style=flat-square&labelColor=1a1a1a" alt="Zero backend"></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-777?style=flat-square&labelColor=1a1a1a" alt="MIT"></a>
 
-> A **zero-backend** task tracker that writes straight to `data/tasks.json` on your machine. No server, no database, no API — your files are your persistence layer.
+> A **zero-backend** task tracker that writes straight to `tasks.json` on your machine. No server, no database, no API — your files are your persistence layer.
 
 </div>
 
@@ -109,7 +109,7 @@ flowchart LR
     store --> ls[(localStorage)]
     store -->|FSAA| fs[fileService]
     fs --> db[(IndexedDB: handle)]
-    fs --> disk[data/tasks.json]
+    fs --> disk[tasks.json]
     ls -->|fallback| seed[Seed data]
 ```
 
@@ -151,7 +151,7 @@ Every mutation → `localStorage` first → FSAA sync if connected. Zero network
 | **CRUD** ✓ | add · toggle · inline-edit (double-click) · delete (slide-out) |
 | **Filters** ✓ | category tabs × status tabs — composable, `aria-selected` |
 | **Stats** ✓ | total · active · done today (mint highlight) |
-| **FSAA** ✓ | pick a folder → app writes `data/tasks.json` on every change |
+| **FSAA** ✓ | pick a folder → app writes `tasks.json` on every change |
 | **Export / Import** ✓ | download JSON dump · upload JSON to restore |
 | **Seed data** ✓ | 3 sample tasks on first visit (no localStorage) |
 | **Responsive** ✓ | single-column ≤480px · 2-col grid ≥600px |

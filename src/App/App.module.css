@@ -30,3 +30,41 @@
   font-size: 0.875rem;
   color: var(--color-ink-3);
 }
+
+/* Footer (was Footer.module.css) */
+.footer {
+  padding: var(--space-lg) 0;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding-left: var(--space-lg);
+    padding-right: var(--space-lg);
+  }
+}
+
+.rule {
+  border: none;
+  height: 1px;
+  background: var(--color-rule);
+  margin: 0 auto var(--space-lg);
+  max-width: var(--shell);
+}
+
+.text {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-3);
+}
+
+.dot {
+  margin: 0 var(--space-xs);
+  opacity: 0.5;
+}
+
+.highlight {
+  color: var(--color-ink-2);
+  font-weight: 500;
+}

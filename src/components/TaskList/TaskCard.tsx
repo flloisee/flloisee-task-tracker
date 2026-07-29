@@ -1,8 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Task } from '../../types/task';
-import { PRIORITY_COLORS } from '../../types/task';
-import { CategoryBadge } from './CategoryBadge';
-import { DueDateBadge } from './DueDateBadge';
+import { CATEGORY_LABELS, CATEGORY_COLORS, PRIORITY_COLORS } from '../../types/task';
+import { formatDate, isOverdue, daysUntil } from '../../utils/dates';
 import styles from './TaskCard.module.css';
 
 interface Props {
@@ -99,9 +98,22 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: Props) {
         )}
 
         <div className={styles.meta}>
-          <CategoryBadge category={task.category} />
+          <span className="category-badge" style={{ background: `color-mix(in oklch, ${CATEGORY_COLORS[task.category]} 15%, transparent)`, color: CATEGORY_COLORS[task.category] }}>{CATEGORY_LABELS[task.category]}</span>
           <span className="priority-dot" style={{ background: PRIORITY_COLORS[task.priority] }} aria-hidden="true" />
-          <DueDateBadge dueDate={task.dueDate} />
+          {(() => {
+            if (!task.dueDate) return null;
+            const overdue = isOverdue(task.dueDate);
+            const remaining = daysUntil(task.dueDate);
+            return (
+              <span className={`due-date-badge${overdue ? ' is-overdue' : ''}`}>
+                {formatDate(task.dueDate)}
+                {overdue && <span className="overdue-label"> overdue</span>}
+                {!overdue && remaining <= 3 && remaining >= 0 && (
+                  <span className="due-soon-label"> in {remaining}d</span>
+                )}
+              </span>
+            );
+          })()}
         </div>
       </div>
 

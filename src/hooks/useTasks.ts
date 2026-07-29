@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import type { Task, TaskFormData, CategoryFilter, StatusFilter } from '../types/task';
-import type { TaskStats } from '../types/stats';
+import type { TaskStats } from '../types/task';
+import type { StorageBackend, StorageSource } from '../services/storageService';
 import * as store from '../services/storageService';
 
-export type ConnectionState = 'loading' | 'connected' | 'disconnected' | 'unsupported' | 'needs-reauth';
+export type ConnectionState = StorageSource;
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [connectionState, setConnectionState] = useState<ConnectionState>('loading');
+  const [storageBackend, setStorageBackendState] = useState<StorageBackend>(store.getBackend());
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
@@ -37,6 +39,7 @@ export function useTasks() {
     try {
       const data = await store.connectDirectory();
       setTasks(data);
+      setStorageBackendState('file');
       setConnectionState('connected');
     } catch {
       setConnectionState('disconnected');
@@ -46,6 +49,7 @@ export function useTasks() {
 
   async function disconnect() {
     await store.disconnectDirectory();
+    setStorageBackendState('local');
     setConnectionState('disconnected');
   }
 
@@ -55,6 +59,7 @@ export function useTasks() {
     try {
       const data = await store.reauthDirectory();
       setTasks(data);
+      setStorageBackendState('file');
       setConnectionState('connected');
     } catch {
       setConnectionState('disconnected');
@@ -86,6 +91,11 @@ export function useTasks() {
     setTasks(prev => prev.map(t => (t.id === id ? updated : t)));
   }
 
+  async function clearDone() {
+    await store.clearDoneTasks();
+    setTasks(await store.getTasks());
+  }
+
   async function reloadTasks() {
     setTasks(await store.getTasks());
   }
@@ -106,12 +116,27 @@ export function useTasks() {
     doneToday: tasks.filter(t => t.done && t.completedAt?.startsWith(today)).length,
   };
 
+  function setStorageBackend(backend: StorageBackend) {
+    store.setBackend(backend);
+    setStorageBackendState(backend);
+  }
+
+  const storageSource = connectionState;
+
+  function setStorageSource(source: StorageSource) {
+    setConnectionState(source);
+  }
+
   return {
     tasks,
     filteredTasks,
     stats,
     loading,
     connectionState,
+    storageSource,
+    setStorageSource,
+    storageBackend,
+    setStorageBackend,
     categoryFilter,
     statusFilter,
     setCategoryFilter,
@@ -120,6 +145,7 @@ export function useTasks() {
     toggleTask,
     deleteTask,
     editTask,
+    clearDone,
     reloadTasks,
     connect,
     disconnect,

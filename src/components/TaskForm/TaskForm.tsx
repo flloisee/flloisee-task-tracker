@@ -1,7 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
 import type { TaskCategory, TaskPriority, TaskFormData } from '../../types/task';
 import { CATEGORY_LABELS, PRIORITY_LABELS } from '../../types/task';
-import { triggerStarBurst } from '../../utils/starBurst';
+
+import { Select } from './Select';
+import { DatePicker } from './DatePicker';
 import styles from './TaskForm.module.css';
 
 interface Props {
@@ -32,7 +34,16 @@ export function TaskForm({ onAdd }: Props) {
         dueDate: dueDate || null,
       });
 
-      if (btnRef.current) triggerStarBurst(btnRef.current);
+      if (btnRef.current) {
+          const el = btnRef.current;
+          const star = document.createElement('span');
+          star.className = 'star-burst';
+          star.style.left = `${el.offsetWidth / 2 - 12}px`;
+          star.style.top = `${el.offsetHeight / 2 - 12}px`;
+          el.style.position = 'relative';
+          el.appendChild(star);
+          star.addEventListener('animationend', () => star.remove());
+        }
 
       setTitle('');
       setDueDate('');
@@ -61,37 +72,19 @@ export function TaskForm({ onAdd }: Props) {
               </span>
             )}
           </div>
-          <select
-            className={styles.select}
+          <Select<TaskCategory>
             value={category}
-            onChange={e => setCategory(e.target.value as TaskCategory)}
-            aria-label="Category"
-          >
-            {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <select
-            className={styles.select}
-            value={priority}
-            onChange={e => setPriority(e.target.value as TaskPriority)}
-            aria-label="Priority"
-          >
-            {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <input
-            type="date"
-            className={styles.dateInput}
-            value={dueDate}
-            onChange={e => setDueDate(e.target.value)}
-            aria-label="Due date"
+            onChange={setCategory}
+            options={Object.entries(CATEGORY_LABELS) as [TaskCategory, string][]}
+            label="Category"
           />
+          <Select<TaskPriority>
+            value={priority}
+            onChange={setPriority}
+            options={Object.entries(PRIORITY_LABELS) as [TaskPriority, string][]}
+            label="Priority"
+          />
+          <DatePicker value={dueDate} onChange={setDueDate} />
         </div>
         <button
           ref={btnRef}

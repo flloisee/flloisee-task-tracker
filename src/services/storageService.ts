@@ -4,6 +4,20 @@ import * as fileApi from './fileService';
 const STORAGE_KEY = 'taskful_tasks_cache';
 
 export type HandleState = 'granted' | 'stored' | 'none';
+export type StorageSource = 'loading' | 'connected' | 'disconnected' | 'unsupported' | 'needs-reauth';
+export type StorageBackend = 'local' | 'file';
+
+const BACKEND_KEY = 'taskful_storage_backend';
+
+export function getBackend(): StorageBackend {
+  const stored = localStorage.getItem(BACKEND_KEY);
+  if (stored === 'local' || stored === 'file') return stored;
+  return 'local';
+}
+
+export function setBackend(backend: StorageBackend): void {
+  localStorage.setItem(BACKEND_KEY, backend);
+}
 
 /* ─── Connection state ─── */
 
@@ -40,13 +54,12 @@ export async function checkHandleState(): Promise<HandleState> {
  * Every write ALWAYS attempts to sync to data/tasks.json via FSAA.
  */
 export async function initialize(): Promise<Task[]> {
-  if (fileApi.isFileSystemAccessSupported() && (await fileApi.hasPersistentAccess())) {
-    const data = await fileApi.readTasksFile();
-    if (data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      return data;
+  if (getBackend() === 'file' && fileApi.isFileSystemAccessSupported() && (await fileApi.hasPersistentAccess())) {
+    try {
+      return (await fileApi.readTasksFile()) ?? [];
+    } catch {
+      return [];
     }
-    return [];
   }
 
   try {
@@ -62,14 +75,14 @@ export async function initialize(): Promise<Task[]> {
 
 export async function connectDirectory(): Promise<Task[]> {
   await fileApi.requestDirectoryAccess();
+  setBackend('file');
   const data = await fileApi.readTasksFile();
-  const tasks = data ?? [];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  return tasks;
+  return data ?? [];
 }
 
 export async function disconnectDirectory(): Promise<void> {
   await fileApi.revokeAccess();
+  setBackend('local');
 }
 
 /**
@@ -80,10 +93,9 @@ export async function disconnectDirectory(): Promise<void> {
 export async function reauthDirectory(): Promise<Task[]> {
   const ok = await fileApi.reauthHandle();
   if (!ok) throw new Error('Permission denied');
+  setBackend('file');
   const data = await fileApi.readTasksFile();
-  const tasks = data ?? [];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  return tasks;
+  return data ?? [];
 }
 
 /* ─── Internal helpers ─── */
@@ -100,24 +112,36 @@ function writeCache(tasks: Task[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 }
 
+async function readFromBackend(): Promise<Task[]> {
+  if (getBackend() === 'file') {
+    try {
+      return (await fileApi.readTasksFile()) ?? [];
+    } catch {
+      return [];
+    }
+  }
+  return readCache();
+}
+
 /**
- * Persist tasks to localStorage AND to data/tasks.json via FSAA (if connected).
- * Always safe to call — if no FSAA handle is stored, it silently uses localStorage only.
- * This guarantees that every mutation (add, toggle, delete, edit) syncs to the file.
+ * Persist tasks to the active backend only — localStorage or tasks.json, never both.
  */
 async function persist(tasks: Task[]): Promise<void> {
-  writeCache(tasks);
-  await fileApi.writeTasksFile(tasks);
+  if (getBackend() === 'file') {
+    await fileApi.writeTasksFile(tasks);
+  } else {
+    writeCache(tasks);
+  }
 }
 
 /* ─── CRUD ─── */
 
 export async function getTasks(): Promise<Task[]> {
-  return readCache();
+  return readFromBackend();
 }
 
 export async function addTask(data: TaskFormData): Promise<Task> {
-  const tasks = readCache();
+  const tasks = await readFromBackend();
   const task: Task = {
     id: crypto.randomUUID(),
     ...data,
@@ -130,7 +154,7 @@ export async function addTask(data: TaskFormData): Promise<Task> {
 }
 
 export async function toggleTask(id: string): Promise<Task> {
-  const tasks = readCache();
+  const tasks = await readFromBackend();
   const updated = tasks.map(t =>
     t.id === id
       ? { ...t, done: !t.done, completedAt: !t.done ? new Date().toISOString() : null }
@@ -144,21 +168,26 @@ export async function updateTask(
   id: string,
   changes: Partial<Pick<Task, 'title' | 'category' | 'priority' | 'dueDate' | 'done'>>
 ): Promise<Task> {
-  const tasks = readCache();
+  const tasks = await readFromBackend();
   const updated = tasks.map(t => (t.id === id ? { ...t, ...changes } : t));
   await persist(updated);
   return updated.find(t => t.id === id)!;
 }
 
 export async function deleteTask(id: string): Promise<void> {
-  const tasks = readCache();
+  const tasks = await readFromBackend();
   await persist(tasks.filter(t => t.id !== id));
+}
+
+export async function clearDoneTasks(): Promise<void> {
+  const tasks = await readFromBackend();
+  await persist(tasks.filter(t => !t.done));
 }
 
 /* ─── Export / Import ─── */
 
 export async function exportTasksAsJson(): Promise<void> {
-  const tasks = readCache();
+  const tasks = await readFromBackend();
   const json = JSON.stringify(tasks, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);

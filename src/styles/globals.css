@@ -40,6 +40,10 @@ textarea {
   font-size: inherit;
 }
 
+select {
+  accent-color: var(--color-accent);
+}
+
 :focus {
   outline: none;
 }

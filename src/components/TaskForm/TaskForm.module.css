@@ -26,9 +26,7 @@
   gap: var(--space-3xs);
 }
 
-.input,
-.select,
-.dateInput {
+.input {
   padding: 0.7rem 1rem;
   border: 1px solid var(--color-rule);
   border-radius: var(--radius-input);
@@ -38,15 +36,11 @@
   transition: border-color var(--dur-micro), box-shadow var(--dur-micro);
 }
 
-.input:hover,
-.select:hover,
-.dateInput:hover {
+.input:hover {
   border-color: var(--color-ink-3);
 }
 
-.input:focus-visible,
-.select:focus-visible,
-.dateInput:focus-visible {
+.input:focus-visible {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 25%, transparent);
 }
@@ -59,12 +53,6 @@
   font-size: 0.75rem;
   color: var(--color-accent-3);
   font-weight: 500;
-}
-
-.select,
-.dateInput {
-  flex: 0 1 150px;
-  min-width: 120px;
 }
 
 .btn {
@@ -117,12 +105,6 @@
 @media (max-width: 480px) {
   .fields {
     flex-direction: column;
-  }
-
-  .select,
-  .dateInput {
-    flex: 1 1 auto;
-    min-width: unset;
   }
 
   .btn {

@@ -1,4 +1,4 @@
-import type { TaskStats } from '../../types/stats';
+import type { TaskStats } from '../../types/task';
 import styles from './StatsBar.module.css';
 
 interface Props {

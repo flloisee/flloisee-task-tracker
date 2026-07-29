@@ -1,21 +1,24 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { exportTasksAsJson, importTasksFromJson, checkHandleState } from '../../services/storageService';
-import type { HandleState } from '../../services/storageService';
+import type { HandleState, StorageBackend } from '../../services/storageService';
 import styles from './DataManager.module.css';
 
 interface Props {
+  storageBackend: StorageBackend;
+  onStorageBackendChange: (backend: StorageBackend) => void;
   onImportComplete: () => void;
   onDisconnect: () => void;
   onReconnect: () => void;
   onReauth: () => void;
 }
 
-export function DataManager({ onImportComplete, onReconnect, onReauth }: Props) {
+export function DataManager({ storageBackend, onStorageBackendChange, onImportComplete, onReconnect, onReauth }: Props) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'ok' | 'error' | 'info' } | null>(null);
   const [handleState, setHandleState] = useState<HandleState>('none');
   const wrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const supported = 'showDirectoryPicker' in window;
 
   // Check connection state on mount and after the panel opens
   const checkConnection = useCallback(async () => {
@@ -44,6 +47,49 @@ export function DataManager({ onImportComplete, onReconnect, onReauth }: Props) 
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
+
+  const handleBackendChange = useCallback(async (backend: StorageBackend) => {
+    onStorageBackendChange(backend);
+    if (backend === 'file') {
+      if (!supported) {
+        setMessage({ text: 'File access not supported in this browser', type: 'error' });
+        setTimeout(() => setMessage(null), 3000);
+        return;
+      }
+      const state = await checkHandleState();
+      setHandleState(state);
+      if (state === 'none') {
+        try {
+          await onReconnect();
+          setHandleState('granted');
+          setMessage({ text: 'Connected to tasks.json!', type: 'ok' });
+        } catch {
+          setHandleState('none');
+          setMessage({ text: 'Connection cancelled.', type: 'error' });
+          setTimeout(() => setMessage(null), 3000);
+          return;
+        }
+      } else if (state === 'stored') {
+        try {
+          await onReauth();
+          setHandleState('granted');
+          setMessage({ text: 'Reconnected!', type: 'ok' });
+        } catch {
+          setHandleState('stored');
+          setMessage({ text: 'Re-authorisation cancelled.', type: 'error' });
+          setTimeout(() => setMessage(null), 3000);
+          return;
+        }
+      } else {
+        onImportComplete();
+        setMessage({ text: 'Connected to tasks.json!', type: 'ok' });
+      }
+    } else {
+      onImportComplete();
+      setMessage({ text: 'Using local storage. Data stays in browser.', type: 'info' });
+    }
+    setTimeout(() => setMessage(null), 3000);
+  }, [onStorageBackendChange, onReconnect, onReauth, onImportComplete, supported]);
 
   const handleExport = useCallback(async () => {
     try {
@@ -100,31 +146,58 @@ export function DataManager({ onImportComplete, onReconnect, onReauth }: Props) 
         className={styles.trigger}
         onClick={() => setOpen(o => { if (!o) checkConnection(); return !o; })}
         aria-label="Data options"
-        title={handleState === 'granted' ? 'Connected to data/tasks.json' : 'Using local storage'}
+        title={storageBackend === 'file' && handleState === 'granted' ? 'Saving to tasks.json' : 'Saving to local storage'}
         data-action="open-data-manager"
       >
-        {handleState === 'granted' ? '💾' : '💿'}
+        {storageBackend === 'file' ? '💾' : '💿'}
       </button>
 
       {open && (
         <div className={styles.panel} role="menu">
-          <div className={styles.statusRow}>
-            <span className={handleState === 'granted' ? styles.connected : styles.disconnected}>
-              {handleState === 'granted'
-                ? '● Connected — writes to data/tasks.json'
-                : handleState === 'stored'
-                  ? '○ Handle stored — tap to re-authorise'
-                  : '○ Using local storage — file not synced'}
-            </span>
+          <div className={styles.sourceToggle}>
+            <span className={styles.sourceLabel}>Storage</span>
+            <div className={styles.sourceOptions}>
+              <button
+                className={`${styles.sourceOption} ${storageBackend === 'local' ? styles.sourceActive : ''}`}
+                onClick={() => handleBackendChange('local')}
+                disabled={false}
+                role="menuitem"
+              >
+                Local (browser)
+              </button>
+              <button
+                className={`${styles.sourceOption} ${storageBackend === 'file' ? styles.sourceActive : ''}`}
+                onClick={() => handleBackendChange('file')}
+                disabled={!supported}
+                role="menuitem"
+                title={!supported ? 'File System Access API not supported in this browser' : ''}
+              >
+                File (tasks.json)
+              </button>
+            </div>
           </div>
 
-          <button className={styles.action} onClick={handleToggleConnection} role="menuitem">
-            {handleState === 'granted'
-              ? '📁 Change data folder'
-              : handleState === 'stored'
-                ? '🔑 Reconnect to data folder'
-                : '📁 Connect to data folder'}
-          </button>
+          {storageBackend === 'file' && (
+            <>
+              <div className={styles.statusRow}>
+                <span className={handleState === 'granted' ? styles.connected : styles.disconnected}>
+                  {handleState === 'granted'
+                    ? '● Connected — writes to data/tasks.json'
+                    : handleState === 'stored'
+                      ? '○ Handle stored — tap to re-authorise'
+                      : '○ Not connected — connect to write to tasks.json'}
+                </span>
+              </div>
+
+              <button className={styles.action} onClick={handleToggleConnection} role="menuitem">
+                {handleState === 'granted'
+                  ? '📁 Change data folder'
+                  : handleState === 'stored'
+                    ? '🔑 Reconnect to data folder'
+                    : '📁 Connect to data folder'}
+              </button>
+            </>
+          )}
 
           <hr className={styles.divider} />
 
@@ -159,18 +232,16 @@ export function DataManager({ onImportComplete, onReconnect, onReauth }: Props) 
           )}
 
           <details className={styles.help}>
-            <summary className={styles.helpSummary}>💡 How data/tasks.json works</summary>
+            <summary className={styles.helpSummary}>💡 How storage works</summary>
             <div className={styles.helpText}>
               <p>
-                <strong>data/tasks.json</strong> is the seed file in this repo. On your first visit
-                (no saved data in browser), it loads these tasks. After that, all changes save to
-                your browser's local storage automatically.
+                <strong>Local (browser):</strong> All data is saved to your browser's local storage.
+                It persists across sessions but is tied to this browser. No file needed.
               </p>
               <p>
-                <strong>To write directly to the file:</strong> Click "Connect to data folder" and
-                pick your <code>data/</code> directory. The app will read and write{' '}
-                <code>tasks.json</code> on every change — every add, delete, toggle, and edit syncs
-                straight to the file on disk.
+                <strong>File (tasks.json):</strong> Pick a folder and the app reads/writes{' '}
+                <code>tasks.json</code> directly. Every add, delete, toggle, and edit syncs straight
+                to the file on disk. Switch back to "Local" anytime.
               </p>
             </div>
           </details>

@@ -46,3 +46,10 @@ export const PRIORITY_COLORS: Record<TaskPriority, string> = {
   medium: 'var(--pri-medium)',
   high: 'var(--pri-high)',
 };
+
+export interface TaskStats {
+  total: number;
+  active: number;
+  done: number;
+  doneToday: number;
+}

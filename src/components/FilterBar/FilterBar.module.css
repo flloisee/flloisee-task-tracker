@@ -49,6 +49,40 @@
   background: var(--color-rule);
 }
 
+.groupWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.clearBtn {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink-3);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background var(--dur-micro), color var(--dur-micro);
+}
+
+.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.clearBtn:hover {
+  background: var(--color-danger, #e5484d);
+  color: #fff;
+  border-color: var(--color-danger, #e5484d);
+}
+
+.clearBtn:focus-visible {
+  outline: 2px solid var(--color-accent-2);
+  outline-offset: 2px;
+}
+
 @media (max-width: 480px) {
   .bar {
     flex-direction: column;
@@ -60,4 +94,70 @@
     width: 100%;
     height: 1px;
   }
+}
+
+/* Confirm modal (was ConfirmModal.module.css) */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0 0 0 / 0.35);
+  z-index: 100;
+}
+
+.card {
+  background: var(--color-paper);
+  border-radius: var(--radius-card);
+  padding: var(--space-lg);
+  max-width: 360px;
+  width: 90vw;
+  box-shadow: 0 8px 32px rgba(0 0 0 / 0.18);
+}
+
+.message {
+  margin: 0 0 var(--space-lg);
+  font-size: 0.95rem;
+  color: var(--color-ink);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-micro);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-accent-2);
+  outline-offset: 2px;
+}
+
+.cancel {
+  background: var(--color-paper-3);
+  color: var(--color-ink-2);
+}
+
+.cancel:hover {
+  background: var(--color-paper-4);
+}
+
+.confirm {
+  background: var(--color-danger, #e5484d);
+  color: #fff;
+}
+
+.confirm:hover {
+  opacity: 0.9;
 }
