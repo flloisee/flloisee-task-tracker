@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import type { Task, TaskFormData, CategoryFilter, StatusFilter } from '../types/task';
 import type { TaskStats } from '../types/task';
 import type { StorageBackend, StorageSource } from '../services/storageService';
@@ -32,16 +32,6 @@ export function useTasks() {
       setLoading(false);
     })();
   }, []);
-
-  const reauthRef = useRef(reauth);
-  reauthRef.current = reauth;
-
-  useEffect(() => {
-    if (connectionState !== 'needs-reauth') return;
-    const handler = () => reauthRef.current();
-    document.addEventListener('pointerdown', handler, { once: true });
-    return () => document.removeEventListener('pointerdown', handler);
-  }, [connectionState]);
 
   /* ─── Connect / Disconnect ─── */
   async function connect() {
