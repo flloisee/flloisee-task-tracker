@@ -45,8 +45,8 @@ export async function hasPersistentAccess(): Promise<boolean> {
     if (!handle) return false;
     const opts: FileSystemHandlePermissionDescriptor = { mode: 'readwrite' };
     // ponytail: only queryPermission() here — requestPermission() needs a user
-    // gesture and fails silently on mobile during app init.  Caller uses
-    // reauthHandle() when the user taps a button.
+    // gesture and fails silently on mobile during app init.  Auto-reauth via
+    // pointerdown handler in useTasks captures the first tap for reauthHandle().
     const status = await handle.queryPermission(opts);
     return status === 'granted';
   } catch {

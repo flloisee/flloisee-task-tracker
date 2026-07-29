@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Task } from '../../types/task';
 import { CATEGORY_LABELS, CATEGORY_COLORS, PRIORITY_COLORS } from '../../types/task';
 import { formatDate, isOverdue, daysUntil } from '../../utils/dates';
+import { ConfirmModal } from '../ConfirmModal/ConfirmModal';
 import styles from './TaskCard.module.css';
 
 interface Props {
@@ -15,6 +16,7 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: Props) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [deleting, setDeleting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastTapRef = useRef(0);
 
@@ -57,9 +59,16 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: Props) {
   );
 
   const handleDelete = useCallback(() => {
+    setShowConfirm(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    setShowConfirm(false);
     setDeleting(true);
     setTimeout(() => onDelete(task.id), 150);
   }, [task.id, onDelete]);
+
+  const handleCancelDelete = useCallback(() => setShowConfirm(false), []);
 
   return (
     <article
@@ -124,6 +133,12 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: Props) {
       >
         ×
       </button>
+      <ConfirmModal
+        open={showConfirm}
+        message={`Delete "${task.title}"? This can't be undone.`}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleCancelDelete}
+      />
     </article>
   );
 }
