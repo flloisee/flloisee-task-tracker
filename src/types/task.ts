@@ -25,7 +25,7 @@ export const CATEGORY_LABELS: Record<TaskCategory, string> = {
   assignment: 'Assignment',
   exam: 'Exam',
   project: 'Project',
-  custom: 'Custom',
+  custom: 'Miscellaneous',
 };
 
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
