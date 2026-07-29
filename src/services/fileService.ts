@@ -134,6 +134,6 @@ export async function writeTasksFile(tasks: Task[]): Promise<void> {
     await writable.write(JSON.stringify(tasks, null, 2));
     await writable.close();
   } catch {
-    // File write failed — localStorage cache is still intact
+    // ponytail: silent — caller always writes localStorage cache first
   }
 }

@@ -50,25 +50,17 @@ export async function checkHandleState(): Promise<HandleState> {
 
 /**
  * Call once at startup. Checks for persistent file handle.
- * Falls back to localStorage.
- * Every write ALWAYS attempts to sync to data/tasks.json via FSAA.
+ * Falls back to localStorage cache.
  */
 export async function initialize(): Promise<Task[]> {
   if (getBackend() === 'file' && fileApi.isFileSystemAccessSupported() && (await fileApi.hasPersistentAccess())) {
     try {
       return (await fileApi.readTasksFile()) ?? [];
     } catch {
-      return [];
+      return readCache();
     }
   }
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-    return [];
-  } catch {
-    return [];
-  }
+  return readCache();
 }
 
 /* ─── Connect / Disconnect ─── */
@@ -117,20 +109,20 @@ async function readFromBackend(): Promise<Task[]> {
     try {
       return (await fileApi.readTasksFile()) ?? [];
     } catch {
-      return [];
+      return readCache();
     }
   }
   return readCache();
 }
 
 /**
- * Persist tasks to the active backend only — localStorage or tasks.json, never both.
+ * Persist tasks — always keeps localStorage cache in sync,
+ * then writes to the active backend (tasks.json or localStorage only).
  */
 async function persist(tasks: Task[]): Promise<void> {
+  writeCache(tasks);
   if (getBackend() === 'file') {
     await fileApi.writeTasksFile(tasks);
-  } else {
-    writeCache(tasks);
   }
 }
 
