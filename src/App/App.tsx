@@ -1,5 +1,6 @@
 import { useTasks } from '../hooks/useTasks';
 import { Nav } from '../components/Nav/Nav';
+import { ReauthBanner } from '../components/ReauthBanner/ReauthBanner';
 import { TaskForm } from '../components/TaskForm/TaskForm';
 import { StatsBar } from '../components/StatsBar/StatsBar';
 import { FilterBar } from '../components/FilterBar/FilterBar';
@@ -12,6 +13,7 @@ export default function App() {
     filteredTasks,
     stats,
     loading,
+    connectionState,
     storageBackend,
     setStorageBackend,
     categoryFilter,
@@ -48,6 +50,10 @@ export default function App() {
         onReconnect={connect}
         onReauth={reauth}
       />
+
+      {storageBackend === 'file' && connectionState === 'needs-reauth' && (
+        <ReauthBanner onReauth={reauth} />
+      )}
 
       <main className={styles.main}>
         <TaskForm onAdd={addTask} />
