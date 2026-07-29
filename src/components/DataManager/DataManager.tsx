@@ -202,10 +202,10 @@ export function DataManager({ storageBackend, onStorageBackendChange, onImportCo
           <hr className={styles.divider} />
 
           <button className={styles.action} onClick={handleExport} role="menuitem">
-            ↓ Export as JSON
+            ↑ Export as JSON
           </button>
           <button className={styles.action} onClick={handleImportClick} role="menuitem">
-            ↑ Import from JSON
+            ↓ Import from JSON
           </button>
 
           <input
