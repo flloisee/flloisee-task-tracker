@@ -182,7 +182,7 @@ export function DataManager({ storageBackend, onStorageBackendChange, onImportCo
               <div className={styles.statusRow}>
                 <span className={handleState === 'granted' ? styles.connected : styles.disconnected}>
                   {handleState === 'granted'
-                    ? '● Connected — writes to data/tasks.json'
+                    ? '● Connected — writes to tasks.json'
                     : handleState === 'stored'
                       ? '○ Handle stored — tap to re-authorise'
                       : '○ Not connected — connect to write to tasks.json'}

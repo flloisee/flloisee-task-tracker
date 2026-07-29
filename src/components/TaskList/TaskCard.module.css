@@ -153,14 +153,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity var(--dur-short), background var(--dur-micro), color var(--dur-micro);
+  transition: background var(--dur-micro), color var(--dur-micro);
   flex-shrink: 0;
-}
-
-.card:hover .deleteBtn,
-.deleteBtn:focus-visible {
-  opacity: 1;
 }
 
 .deleteBtn:hover {
