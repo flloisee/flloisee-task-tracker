@@ -89,20 +89,23 @@ export async function revokeAccess(): Promise<void> {
   await new Promise<void>(r => (tx.oncomplete = () => r()));
 }
 
-async function getDirHandle(): Promise<FileSystemDirectoryHandle> {
-  const handle = await loadHandle();
-  if (!handle) throw new Error('No directory connected.');
-  return handle;
-}
-
 /**
  * Read tasks.json from the user's connected directory.
- * Returns null if file doesn't exist yet.
+ * Returns null if permission isn't granted or the file doesn't exist.
  */
 export async function readTasksFile(): Promise<Task[] | null> {
+  const handle = await loadHandle();
+  if (!handle) return null;
+
+  const opts: FileSystemHandlePermissionDescriptor = { mode: 'readwrite' };
+  let status = await handle.queryPermission(opts);
+  if (status === 'prompt') {
+    status = await handle.requestPermission(opts);
+  }
+  if (status !== 'granted') return null;
+
   try {
-    const dir = await getDirHandle();
-    const fileHandle = await dir.getFileHandle(FILE_NAME);
+    const fileHandle = await handle.getFileHandle(FILE_NAME);
     const file = await fileHandle.getFile();
     const text = await file.text();
     return JSON.parse(text) as Task[];
